@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        substack_popup_dismisser
 // @namespace   https://github.com/jmegner
-// @version     0.1
+// @version     0.2
 // @description dismiss popups from substack
 // @license     Unlicense
 // @homepageURL https://github.com/jmegner/substack_popup_dismisser
@@ -12,9 +12,9 @@
 // ==/UserScript==
 
 "use strict";
-console.debug("substack_popup_dismisser active");
+//console.debug("substack_popup_dismisser active");
 
-(new MutationObserver(makeLogWrappedCallback(checkForDismissalDiv))).observe(
+(new MutationObserver(makeLogWrappedCallback(checkForPopups))).observe(
   document,
   {childList: true, subtree: true});
 
@@ -36,23 +36,31 @@ function makeLogWrappedCallback(funcToWrap)
   return function(...funcArgs) { return execLogWrappedFunc(funcToWrap, ...funcArgs); };
 }
 
-function getDismissalDiv()
+function getXPathResult(xpathExpression)
 {
-  var xPathResult = document.evaluate("//div[text()='Continue reading']", document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+  var xPathResult = document.evaluate(xpathExpression, document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
   //console.debug("xPathResult", xPathResult);
-  var dismissalDiv = xPathResult.iterateNext();
-  //console.debug("dismissalDiv", dismissalDiv);
-  return dismissalDiv;
-
+  var firstResult = xPathResult.iterateNext();
+  //console.debug("firstResult", firstResult);
+  return firstResult;
 }
 
-function checkForDismissalDiv(changes, observer)
+function checkForPopups(changes, observer)
 {
-  var dismissalDiv = getDismissalDiv();
+  let xpaths = [
+    "//div[text()='Continue reading']",
+    "//div[text()='No thanks']",
+  ];
 
-  if(dismissalDiv)
+  for(let xpath of xpaths)
   {
-    dismissalDiv.click();
-    console.debug("substack_popup_dismisser clicked dismiss; relevant mutation list", changes);
+    let dismissalDiv = getXPathResult(xpath);
+    if(dismissalDiv)
+    {
+      dismissalDiv.click();
+      console.debug(
+        "substack_popup_dismisser clicked \"" + xpath + "\", relevant mutation list",
+        changes);
+    }
   }
 }

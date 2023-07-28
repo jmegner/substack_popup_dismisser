@@ -12,7 +12,7 @@
 // ==/UserScript==
 
 "use strict";
-//console.debug("substack_popup_dismisser active");
+console.debug("substack_popup_dismisser active");
 
 (new MutationObserver(makeLogWrappedCallback(checkForPopups))).observe(
   document,
@@ -49,15 +49,17 @@ function checkForPopups(changes, observer)
 {
   let xpaths = [
     "//div[text()='Continue reading']",
+    "//button[text()='Continue reading']",
     "//div[text()='No thanks']",
+    "//button[text()='No thanks']",
   ];
 
   for(let xpath of xpaths)
   {
-    let dismissalDiv = getXPathResult(xpath);
-    if(dismissalDiv)
+    let dismissalElem = getXPathResult(xpath);
+    if(dismissalElem)
     {
-      dismissalDiv.click();
+      dismissalElem.click();
       console.debug(
         "substack_popup_dismisser clicked \"" + xpath + "\", relevant mutation list",
         changes);
